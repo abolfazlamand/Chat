@@ -1,9 +1,11 @@
 import express from 'express';
-import { register } from '../controllers/authController.js';
-import { validateRegister, checkDuplicateUsername } from '../middleware/authMiddleware.js';
+import { register, login, refreshToken } from '../controllers/authController.js';
+import * as auth from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-router.post('/register',validateRegister,checkDuplicateUsername, register);
+router.post('/register',auth.validateRegister,auth.checkDuplicateUsername, register);
+router.post('/login', auth.validateLogin, login);
+router.post('/refreshToken', refreshToken);
 
 export default router;
