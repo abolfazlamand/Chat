@@ -7,10 +7,10 @@ const server = http.createServer(app);
 const io = new Server(server);
 
 
-const onlineUsers= {} ;
+const onlineUsers= new Map(); 
 
 export const getReceiverSocketId = (receiverId) => {
-    return onlineUsers[receiverId]
+    return onlineUsers.get(receiverId)
 };
 
 
@@ -20,18 +20,18 @@ io.on("connection", (socket) => {
     const userId= socket.handshake.query.userId;
 
     if(userId) {
-        onlineUsers[userId] =socket.id;
+        onlineUsers.set(userId, socket.id);
     }
 
-    io.emit("getOnlineUsers", Object.keys(onlineUsers));
+    io.emit("getOnlineUsers", Array.from(onlineUsers.keys()));
 
     socket.on("disconnect", ()=>{
         console.log("a user disconnectes", socket.id);
-        delete onlineUsers[userId];
-        io.emit("getOnlineUsers", Object.keys(onlineUsers));
+        onlineUsers.delete(userId);
+        io.emit("getOnlineUsers", Array.from(onlineUsers.keys()));
     });
 
-    console.log(onlineUsers);
+    console.log(Array.from(onlineUsers.entries()));
 });
 
 export { app, io, server}
