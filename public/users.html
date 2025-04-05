@@ -4,28 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Users</title>
+    <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
     <h1>Logged-in Users</h1>
     <ul id="userList"></ul>
     <script>
-        async function fetchUsers() {
-            const response = await fetch('/api/users/getUsers', {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-                }
-            });
-            const users = await response.json();
+        const socket = io();
+
+        socket.on('connect', () => {
+            const userId = localStorage.getItem('userId');
+            socket.emit('userOnline', userId);
+        });
+
+        socket.on('updateUserList', (users) => {
             const userList = document.getElementById('userList');
+            userList.innerHTML = '';
             users.forEach(user => {
                 const li = document.createElement('li');
-                li.textContent = user.username;
+                li.textContent = user;
+                li.addEventListener('click', () => {
+                    window.location.href = `chat.html?userId=${user}`;
+                });
                 userList.appendChild(li);
             });
-        }
-
-        fetchUsers();
+        });
     </script>
 </body>
 </html>

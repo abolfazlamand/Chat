@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat</title>
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <h1>Chat</h1>
+    <div id="chatWith"></div>
+    <div id="messages"></div>
+    <input type="text" id="messageInput" placeholder="Type a message...">
+    <button id="sendButton">Send</button>
+    <script>
+        const socket = io();
+        const urlParams = new URLSearchParams(window.location.search);
+        const receiverId = urlParams.get('userId');
+        const receiverName = urlParams.get('userName');
+        const senderId = localStorage.getItem('userId');
+        const senderName = localStorage.getItem('userName');
+
+        document.getElementById('chatWith').textContent = `Chat with ${receiverName}`;
+
+        socket.on('connect', () => {
+            socket.emit('userOnline', senderId);
+        });
+
+        socket.on('receiveMessage', (message) => {
+            const messagesDiv = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.textContent = `${message.senderName}: ${message.content}`;
+            messagesDiv.appendChild(messageDiv);
+        });
+
+        document.getElementById('sendButton').addEventListener('click', () => {
+            const messageInput = document.getElementById('messageInput');
+            const content = messageInput.value;
+            if (content.trim() !== '') {
+                socket.emit('sendMessage', { senderId, senderName, receiverId, content });
+                const messagesDiv = document.getElementById('messages');
+                const messageDiv = document.createElement('div');
+                messageDiv.textContent = `Me: ${content}`;
+                messagesDiv.appendChild(messageDiv);
+                messageInput.value = '';
+            }
+        });
+    </script>
+</body>
+</html>
